@@ -121,6 +121,109 @@ const updateTour = async (req, res) => {
   }
 };
 
+//https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
+//Obtener estadisticas de tours
+const getTourStats = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        // con el _id podes segmentarlo por el campo que quieras
+        $group: {
+          _id: { $toUpper: "$difficulty" },
+          numTours: { $sum: 1 },
+          avgRating: { $avg: "$ratingsAverage" },
+          numRating: { $sum: "$ratingsQuantity" },
+          avgPrice: { $avg: "$price" },
+          minPrice: { $min: "$price" },
+          maxPrice: { $max: "$price" },
+        },
+      },
+      {
+        $sort: { avgPrice: 1 },
+      },
+
+      // excluye los que tengan el id EASY
+      // {
+      //   $match: { _id: { $ne: "EASY" } },
+      // },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        stats,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "Fail",
+      message: error.message,
+    });
+  }
+};
+
+const getMonthlyPlan = async (req, res) => {
+  try {
+    const year = req.params.year * 1;
+
+    const plan = await Tour.aggregate([
+      // descompone el array en un documento por cada elemento
+      {
+        $unwind: "$startDates",
+      },
+      // te filtra por el año que le pases
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      // agrupa por el mes y te dice cuantos tours hay en ese mes y te los agrega en un array
+      {
+        $group: {
+          _id: { $month: "$startDates" },
+          numTourStarts: { $sum: 1 },
+          tours: { $push: "$name" },
+        },
+      },
+      {
+        // te agrega un campo con el nombre que quieras usando un campo de la query
+        $addFields: { month: "$_id" },
+      },
+      // te saca el campo que quieras
+      {
+        $project: { _id: 0 },
+      },
+      // te ordena por el campo que quieras
+      {
+        $sort: { numTourStarts: -1 },
+      },
+      // te limita la cantidad de resultados
+      {
+        $limit: 12,
+      },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      total: plan.length,
+      data: {
+        plan,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "Fail",
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllTours,
   createTour,
@@ -129,4 +232,6 @@ module.exports = {
   updateTour,
   checkBody,
   aliasTopTours,
+  getTourStats,
+  getMonthlyPlan,
 };

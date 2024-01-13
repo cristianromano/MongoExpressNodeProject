@@ -4,6 +4,10 @@ const controllers = require("../controllers/tourController");
 
 //router.param("id", controllers.checkId);
 
+router.route("/monthly-plan/:year").get(controllers.getMonthlyPlan);
+
+router.route("/tour-stats").get(controllers.getTourStats);
+
 router
   .route("/top-5-cheap")
   .get(controllers.aliasTopTours, controllers.getAllTours);
