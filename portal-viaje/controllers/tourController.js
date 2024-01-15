@@ -91,10 +91,14 @@ const getOneTour = catchAsync(async (req, res, next) => {
 });
 
 const updateTour = catchAsync(async (req, res, next) => {
-  const tourUpdated = await Tour.findOneAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const tourUpdated = await Tour.findOneAndUpdate(
+    { _id: req.params.id },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!tourUpdated) {
     return next(new appError("No tour found with that ID", 404));

@@ -19,6 +19,7 @@ mongoose
   });
 
 app.listen(process.env.PORT, () => {
-  console.log(`App running on port ${process.env.PORT}...`);
+  console.log(
+    `App running on port ${process.env.PORT} en modo ${process.env.NODE_ENV}`
+  );
 });
-
