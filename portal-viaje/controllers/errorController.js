@@ -62,6 +62,10 @@ const errorGlobal = (err, req, res, next) => {
       error = handleduplicateFieldsDB(error);
     } else if (err.name === "ValidationError") {
       error = handleValidationErrorDB(error);
+    } else if (err.name === "JsonWebTokenError") {
+      error = new appError("Invalid token. Please log in again!", 401);
+    } else if (err.name === "TokenExpiredError") {
+      error = new appError("Your token has expired! Please log in again.", 401);
     }
 
     sendErrorProd(error, res);
