@@ -58,16 +58,13 @@ const errorGlobal = (err, req, res, next) => {
     let error = { ...err };
     if (err.name === "CastError") {
       error = handleCastErrorDB(error);
-      sendErrorProd(error, res);
     } else if (err.code == 11000) {
-      handleduplicateFieldsDB(error);
-      sendErrorProd(error, res);
+      error = handleduplicateFieldsDB(error);
     } else if (err.name === "ValidationError") {
       error = handleValidationErrorDB(error);
-      sendErrorProd(error, res);
-    } else {
-      sendErrorProd(err, res);
     }
+
+    sendErrorProd(error, res);
   }
 
   next();

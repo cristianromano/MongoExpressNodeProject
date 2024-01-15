@@ -18,8 +18,22 @@ mongoose
     console.log(`DB connection successful! ${con.connections[0].name}`);
   });
 
-app.listen(process.env.PORT, () => {
+const server = app.listen(process.env.PORT, () => {
   console.log(
     `App running on port ${process.env.PORT} en modo ${process.env.NODE_ENV}`
   );
+});
+
+process.on("unhandledRejection", (err) => {
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+process.on("uncaughtException", (err) => {
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
 });
