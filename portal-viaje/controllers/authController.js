@@ -1,6 +1,6 @@
-const appError = require("../utils/appError");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
+const appError = require("../utils/appError");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/email");
 const crypto = require("crypto");
@@ -8,6 +8,18 @@ const crypto = require("crypto");
 const signToken = (id) => {
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({
+    status: "success",
+    token,
+    data: {
+      user: user,
+    },
   });
 };
 
@@ -20,15 +32,7 @@ const signUp = catchAsync(async (req, res) => {
     passwordChangedAt: req.body.passwordChangedAt,
   });
 
-  const token = signToken(newUser._id);
-
-  res.status(201).json({
-    status: "success",
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 const login = catchAsync(async (req, res, next) => {
@@ -47,12 +51,7 @@ const login = catchAsync(async (req, res, next) => {
   }
 
   // 3) if everything ok, send token to client
-  const token = signToken(user._id);
-
-  res.status(201).json({
-    status: "success",
-    token,
-  });
+  createSendToken(user, 200, res);
 });
 
 const protect = catchAsync(async (req, res, next) => {
@@ -187,6 +186,30 @@ const resetPassword = catchAsync(async (req, res, next) => {
   });
 });
 
+const updatePassword = catchAsync(async (req, res, next) => {
+  let password, newPassword, newPasswordConfirm;
+  ({ password, newPassword, newPasswordConfirm } = req.body);
+
+  // 1) get user from collection
+  const user = await User.findById(req.user.id).select("+password");
+
+  const correct = await user.correctPassword(password, user.password);
+
+  if (!user || !correct) {
+    return next(new appError("Incorrect email or password", 401));
+  }
+  // 2) check if posted current password is correct
+
+  // 3) if so, update password
+  user.password = newPassword;
+  user.passwordConfirm = newPasswordConfirm;
+
+  await user.save({ validateBeforeSave: false });
+
+  // 4) log user in, send JWT
+  createSendToken(user, 200, res);
+});
+
 module.exports = {
   signUp,
   login,
@@ -194,4 +217,5 @@ module.exports = {
   restrictTo,
   forgotPassword,
   resetPassword,
+  updatePassword,
 };
