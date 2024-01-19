@@ -1,3 +1,4 @@
+const express = require("express");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const appError = require("../utils/appError");
@@ -11,8 +12,27 @@ const signToken = (id) => {
   });
 };
 
+const cookieOptions = {
+  expires: new Date(
+    Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  ),
+  httpOnly: true,
+};
+
+/**
+ * @param {Object} user - The user object.
+ * @param {number} statusCode - The status code.
+ * @param {express.Response} res - The response object.
+ */
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
+
+  // if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+  process.env.NODE_ENV === "production"
+    ? (cookieOptions.secure = true)
+    : (cookieOptions.secure = false);
+
+  res.cookie("jwt", token, cookieOptions);
 
   res.status(statusCode).json({
     status: "success",
@@ -30,6 +50,7 @@ const signUp = catchAsync(async (req, res) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
 
   createSendToken(newUser, 201, res);

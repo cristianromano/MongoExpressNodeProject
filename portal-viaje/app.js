@@ -1,24 +1,62 @@
 const express = require("express");
 const morgan = require("morgan");
+const rateLimit = require("express-rate-limit"); // para limitar el numero de peticiones a la api
+const helmet = require("helmet"); // para proteger la app de ciertos ataques
+const mongoSanitize = require("express-mongo-sanitize"); // para proteger la app de ciertos ataques
+const xss = require("xss-clean"); // para proteger la app de ciertos ataques
+const hpp = require("hpp"); // para proteger la app de ciertos ataques
+
 const appError = require("./utils/appError");
 const TourRouter = require("./routes/tourRoutes");
 const UserRouter = require("./routes/userRoutes");
 const app = express();
 const globalErrorHandler = require("./controllers/errorController");
+const { whitelist } = require("validator");
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+app.use(helmet()); // para proteger la app de ciertos ataques como xss (eliminar html de los querys) y otros
+
+const limiter = rateLimit({
+  max: 30, // maximo numero de peticiones
+  windowMs: 60 * 60 * 1000, // 1 hora
+  message: "Too many requests from this IP, please try again in an hour!",
+});
+
+app.use("/api", limiter); // para limitar el numero de peticiones a la api
+
 // para poder tener la data en el req en post
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.json({
+    limit: "10kb",
+  })
+);
+
+app.use(mongoSanitize()); // para proteger la app de ciertos ataques como query injection (eliminar $ y . de los querys)
+app.use(xss()); // para proteger la app de ciertos ataques como xss (eliminar html de los querys) y otros (cross site scripting)
+app.use(
+  hpp({
+    whitelist: [
+      "duration",
+      "ratingsAverage",
+      "ratingsQuantity",
+      "maxGroupSize",
+      "difficulty",
+      "price",
+    ],
+  })
+); // para proteger la app de ciertos ataques como parameter pollution (eliminar parametros duplicados)
+
+// para poder tener la data en el req en post desde un form html
+app.use(express.static(`${__dirname}/public`));
+//app.use(express.urlencoded({ extended: true }));
 
 //middleware
 // app.use((req, res, next) => {
 //   console.log("Hello from the middleware 👋 ");
 //   next();
 // });
-
-app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/tours", TourRouter);
 app.use("/api/v1/users", UserRouter);
