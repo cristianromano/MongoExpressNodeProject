@@ -107,7 +107,6 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-
     //guides:Array
     guides: [
       //referencia a otro modelo
@@ -123,6 +122,21 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// Virtual populate
+tourSchema.virtual("reviews", {
+  // nombre del modelo
+  ref: "Review",
+  // referncia al campo tour del modelo review
+  foreignField: "tour",
+  // campo del modelo tour que se va a relacionar con el modelo review
+  localField: "_id",
+});
+
+// en el schema se puede agregar metodos que se pueden usar en el controlador o en el middleware
+tourSchema.virtual("durationWeeks").get(function () {
+  return this.duration / 7;
+});
 
 // DOCUMENT MIDDLEWARE
 // corre antes que el .save() y el .create()
@@ -171,11 +185,6 @@ tourSchema.pre(/^find/, function (next) {
 tourSchema.pre("aggregate", function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
-});
-
-// en el schema se puede agregar metodos que se pueden usar en el controlador o en el middleware
-tourSchema.virtual("durationWeeks").get(function () {
-  return this.duration / 7;
 });
 
 const Tour = mongoose.model("Tour", tourSchema);

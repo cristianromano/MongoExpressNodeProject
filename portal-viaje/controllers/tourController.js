@@ -78,7 +78,7 @@ const deleteTour = catchAsync(async (req, res, next) => {
 
 const getOneTour = catchAsync(async (req, res, next) => {
   // con populate te trae los datos de la referencia que le pases en el modelo de tours (en este caso los guides)
-  const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate("reviews");
 
   if (!tour) {
     return next(new appError("No tour found with that ID", 404));
