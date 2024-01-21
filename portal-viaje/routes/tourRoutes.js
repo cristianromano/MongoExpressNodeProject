@@ -2,8 +2,10 @@ const express = require("express");
 const router = express.Router();
 const controllers = require("../controllers/tourController");
 const authController = require("../controllers/authController");
-const ReviewController = require("../controllers/reviewController");
-//router.param("id", controllers.checkId);
+const reviewRouter = require("./reviewRoutes");
+
+// redirecting to reviewRouter if the route is /:tourId/reviews (mounting a router)
+router.use("/:tourId/reviews", reviewRouter); //mounting a router
 
 router.route("/monthly-plan/:year").get(controllers.getMonthlyPlan);
 
@@ -28,12 +30,12 @@ router
     controllers.deleteTour
   );
 
-router
-  .route("/:tourId/reviews")
-  .post(
-    authController.protect,
-    authController.restrictTo("user"),
-    ReviewController.createReview
-  );
+// router
+//   .route("/:tourId/reviews")
+//   .post(
+//     authController.protect,
+//     authController.restrictTo("user"),
+//     ReviewController.createReview
+//   );
 
 module.exports = router;
