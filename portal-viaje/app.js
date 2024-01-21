@@ -9,6 +9,7 @@ const hpp = require("hpp"); // para proteger la app de ciertos ataques
 const appError = require("./utils/appError");
 const TourRouter = require("./routes/tourRoutes");
 const UserRouter = require("./routes/userRoutes");
+const ReviewRouter = require("./routes/reviewRoutes");
 const app = express();
 const globalErrorHandler = require("./controllers/errorController");
 
@@ -60,6 +61,7 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/tours", TourRouter);
 app.use("/api/v1/users", UserRouter);
+app.use("/api/v1/reviews", ReviewRouter);
 
 // si no encuentra la ruta en el router de tours o users entonces pasa por aqui y muestra el error 404
 app.all("*", (req, res, next) => {

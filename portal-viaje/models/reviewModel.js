@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -33,6 +32,19 @@ const reviewSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// QUERY MIDDLEWARE
+reviewSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "tour",
+    select: "name",
+  }).populate({
+    path: "user",
+    select: "name photo",
+  });
+
+  next();
+});
 
 const Review = mongoose.model("Review", reviewSchema);
 
