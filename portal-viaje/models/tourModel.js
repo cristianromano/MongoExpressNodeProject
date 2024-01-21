@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 //const validator = require("validator");
-
+//const User = require("./userModel");
 const tourSchema = new mongoose.Schema(
   {
     name: {
@@ -82,8 +82,43 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      //GeoJSON
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number], //arreglo de numeros
+      address: String,
+      description: String,
+    },
+    locations: [
+      //GeoJSON
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number], //arreglo de numeros
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+
+    //guides:Array
+    guides: [
+      //referencia a otro modelo
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
+    // para que los virtuals se muestren en el json
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -96,6 +131,18 @@ tourSchema.pre("save", function (next) {
   next();
 });
 
+// para embebido
+
+// tourSchema.pre("save", async function (next) {
+//   const guidesPromise = this.guides.map(async (id) => {
+//     await User.findById(id);
+//   });
+
+//   // para que se ejecuten todas las promesas al mismo tiempo
+//   this.guides = await Promise.all(guidesPromise);
+//   next();
+// });
+
 // corre despues que el .save() y el .create()
 // tourSchema.post("save", function (doc, next) {
 //   console.log(doc);
@@ -103,16 +150,21 @@ tourSchema.pre("save", function (next) {
 // });
 
 //QUERY MIDDLEWARE
+
 // corre antes de un .find() o un .findOne() o un .findOneAndUpdate() o un .findOneAndDelete()
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   next();
 });
 
-// tourSchema.post(/^find/, function (docs,next) {
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "guides",
+    select: "-__v -passwordChangedAt",
+  });
 
-//   next();
-// });
+  next();
+});
 
 // AGGREGATION MIDDLEWARE
 // corre antes de un .aggregate()

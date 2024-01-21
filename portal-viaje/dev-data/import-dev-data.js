@@ -21,7 +21,7 @@ mongoose
 
 //READ JSON FILE
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
+  fs.readFileSync(`${__dirname}/../dev-data/data/tours.json`)
 );
 
 //IMPORT DATA INTO DB
@@ -48,6 +48,6 @@ const deleteData = async () => {
 
 if (process.argv[2] === "--import") {
   importData();
-} else {
+} else if (process.argv[2] === "--delete") {
   deleteData();
 }

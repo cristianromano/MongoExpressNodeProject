@@ -11,7 +11,7 @@ const TourRouter = require("./routes/tourRoutes");
 const UserRouter = require("./routes/userRoutes");
 const app = express();
 const globalErrorHandler = require("./controllers/errorController");
-const { whitelist } = require("validator");
+
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }

@@ -132,34 +132,54 @@ const restrictTo = (...roles) => {
 };
 
 // esta funcion es para cuando el usuario olvida su contraseña y la quiere resetear por medio de un email que se le envia con un token que expira en 10 minutos y que se le envia al email del usuario
+/**
+ * Handles the forgot password functionality.
+ * Finds the user based on the provided email, generates a password reset token,
+ * saves it to the user document, sends a password reset email, and returns a success response.
+ * If the user does not exist, it returns an error response.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @param {Object} user - The user document.
+ * @returns {Object} - The response object with status and message properties.
+ */
 const forgotPassword = catchAsync(async (req, res, next) => {
+  // Find user based on email
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
+    // If user does not exist, return error
     return next(new appError("There is no user with email address.", 404));
   }
 
+  // Generate password reset token and save it to user document
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
+  // Construct the reset URL
   const resetUrl = `${req.protocol}://${req.get(
     "host"
   )}/api/v1/users/resetPassword/${resetToken}`;
 
+  // Compose the email message
   const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`;
 
   try {
+    // Send the password reset email
     await sendEmail({
       email: user.email,
       subject: "Your password reset token (valid for 10 min)",
       message,
     });
 
+    // Return success response
     res.status(200).json({
       status: "success",
       message: "Token sent to email!",
     });
   } catch (error) {
+    // If there was an error sending the email, handle it
     user.passwordResetToken = undefined;
     user.passwordResetExpire = undefined;
     await user.save({ validateBeforeSave: false });
