@@ -123,6 +123,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// para que el campo price sea indexado en la base de datos
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 // Virtual populate
 tourSchema.virtual("reviews", {
   // nombre del modelo
