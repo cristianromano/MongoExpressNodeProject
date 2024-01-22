@@ -7,7 +7,13 @@ const reviewRouter = require("./reviewRoutes");
 // redirecting to reviewRouter if the route is /:tourId/reviews (mounting a router)
 router.use("/:tourId/reviews", reviewRouter); //mounting a router
 
-router.route("/monthly-plan/:year").get(controllers.getMonthlyPlan);
+router
+  .route("/monthly-plan/:year")
+  .get(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide", "guide"),
+    controllers.getMonthlyPlan
+  );
 
 router.route("/tour-stats").get(controllers.getTourStats);
 
@@ -17,13 +23,21 @@ router
 
 router
   .route("/")
-  .get(authController.protect, controllers.getAllTours)
-  .post(controllers.createTour);
+  .get(controllers.getAllTours)
+  .post(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide"),
+    controllers.createTour
+  );
 
 router
   .route("/:id")
   .get(controllers.getOneTour)
-  .patch(controllers.updateTour)
+  .patch(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide"),
+    controllers.updateTour
+  )
   .delete(
     authController.protect,
     authController.restrictTo("admin", "lead-guide"),

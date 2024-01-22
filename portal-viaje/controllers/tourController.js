@@ -1,8 +1,8 @@
 //const fs = require("fs");
-const Tour = require("../models/tourModel");
-//const APIFeatures = require("../utils/apiFeatures");
-const catchAsync = require("../utils/catchAsync");
 //const appError = require("../utils/appError");
+//const APIFeatures = require("../utils/apiFeatures");
+const Tour = require("../models/tourModel");
+const catchAsync = require("../utils/catchAsync");
 const handlerFactory = require("./handlerFactory");
 
 //#region forma antigua de getAllTours

@@ -1,6 +1,6 @@
-const Review = require("../models/reviewModel");
 //const catchAsync = require("../utils/catchAsync");
 //const appError = require("../utils/appError");
+const Review = require("../models/reviewModel");
 const handlerFactory = require("./handlerFactory");
 
 // #region funciones que utilizo en las rutas
@@ -22,14 +22,6 @@ const handlerFactory = require("./handlerFactory");
 // });
 // #endregion
 
-const setTourUserIds = (req, res, next) => {
-  // Allow nested routes
-  if (!req.body.tour) req.body.tour = req.params.tourId;
-  if (!req.body.user) req.body.user = req.user.id;
-
-  next();
-};
-
 // #region Forma antigua de createReview
 // const createReview = catchAsync(async (req, res) => {
 //   // Allow nested routes
@@ -46,6 +38,14 @@ const setTourUserIds = (req, res, next) => {
 //   });
 // });
 // #endregion
+
+const setTourUserIds = (req, res, next) => {
+  // Allow nested routes
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  if (!req.body.user) req.body.user = req.user.id;
+
+  next();
+};
 
 const getAllReviews = handlerFactory.getAll(Review);
 const createReview = handlerFactory.createOne(Review);

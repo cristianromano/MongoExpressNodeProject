@@ -3,17 +3,19 @@ const catchAsync = require("../utils/catchAsync");
 const appError = require("../utils/appError");
 const handlerFactory = require("./handlerFactory");
 
-const getAllUsers = catchAsync(async (req, res) => {
-  const users = await User.find();
+// #region forma antigua de getAllUsers
+// const getAllUsers = catchAsync(async (req, res) => {
+//   const users = await User.find();
 
-  res.status(200).json({
-    status: "success",
-    users: users.length,
-    data: {
-      users,
-    },
-  });
-});
+//   res.status(200).json({
+//     status: "success",
+//     users: users.length,
+//     data: {
+//       users,
+//     },
+//   });
+// });
+// #endregion
 
 // ...AllowedFields is an array of strings
 const filterObj = (obj, ...allowedFields) => {
@@ -72,9 +74,15 @@ const createUser = (req, res) => {
   });
 };
 
+const getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 const updateUser = handlerFactory.updateOne(User);
 const deleteUser = handlerFactory.deleteOne(User);
 const getOneUser = handlerFactory.getOne(User);
+const getAllUsers = handlerFactory.getAll(User);
 
 module.exports = {
   getAllUsers,
@@ -84,4 +92,5 @@ module.exports = {
   getOneUser,
   updateMe,
   deleteMe,
+  getMe,
 };
