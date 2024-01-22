@@ -1,12 +1,17 @@
 //const fs = require("fs");
 const Tour = require("../models/tourModel");
-const APIFeatures = require("../utils/apiFeatures");
+//const APIFeatures = require("../utils/apiFeatures");
 const catchAsync = require("../utils/catchAsync");
-const appError = require("../utils/appError");
+//const appError = require("../utils/appError");
+const handlerFactory = require("./handlerFactory");
+
+//#region forma antigua de getAllTours
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // );
+// #endregion
 
+//#region funciones que utilizo en las rutas
 const aliasTopTours = (req, res, next) => {
   req.query.limit = "5";
   req.query.sort = "-ratingsAverage,price";
@@ -23,98 +28,117 @@ const checkBody = (req, res, next) => {
   }
   next();
 };
+// #endregion
 
-//handlers de rutas
-const getAllTours = catchAsync(async (req, res) => {
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .pagination();
+// #region forma antigua de getAllTours
+// const getAllTours = catchAsync(async (req, res) => {
+//   const features = new APIFeatures(Tour.find(), req.query)
+//     .filter()
+//     .sort()
+//     .limitFields()
+//     .pagination();
 
-  const tours = await features.query;
+//   const tours = await features.query;
 
-  res.status(200).json({
-    status: "success",
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
+//   res.status(200).json({
+//     status: "success",
+//     results: tours.length,
+//     data: {
+//       tours,
+//     },
+//   });
+// });
+// #endregion
 
-const createTour = catchAsync(async (req, res) => {
-  const newTour = await Tour.create(req.body);
+const getAllTours = handlerFactory.getAll(Tour);
+const createTour = handlerFactory.createOne(Tour);
+const deleteTour = handlerFactory.deleteOne(Tour);
+const updateTour = handlerFactory.updateOne(Tour);
+const getOneTour = handlerFactory.getOne(Tour, { path: "reviews" }); // con populate te trae los datos de la referencia que le pases en el modelo de tours (en este caso los guides)
 
-  res.status(201).json({
-    status: "success",
-    data: {
-      tour: newTour,
-    },
-  });
+// #region forma antigua de getOneTour
+// const getOneTour = catchAsync(async (req, res, next) => {
+//   // con populate te trae los datos de la referencia que le pases en el modelo de tours (en este caso los guides)
+//   const tour = await Tour.findById(req.params.id).populate("reviews");
 
-  // ya no es necesario la funcion catchAsync porque ya lo estamos usando en el handler de rutas
-  // try {
-  // } catch (error) {
-  //   res.status(400).json({
-  //     status: "fail",
-  //     message: error.message,
-  //   });
-  // }
-});
+//   if (!tour) {
+//     return next(new appError("No tour found with that ID", 404));
+//   }
+//   res.status(200).json({
+//     status: "success",
+//     data: {
+//       tour: tour,
+//     },
+//   });
+// });
+//#endregion
 
-const deleteTour = catchAsync(async (req, res, next) => {
-  const tourDelete = await Tour.findByIdAndDelete(req.params.id);
+//#region forma antigua de getAllTours
+// const createTour = catchAsync(async (req, res) => {
+//   const newTour = await Tour.create(req.body);
 
-  if (!tourDelete) {
-    return next(new appError("No tour found with that ID", 404));
-  }
-  res.status(204).json({
-    status: "success",
-    data: tourDelete,
-    message: "Tour deleted",
-  });
-});
+//   res.status(201).json({
+//     status: "success",
+//     data: {
+//       tour: newTour,
+//     },
+//   });
+// });
+//#endregion
 
-const getOneTour = catchAsync(async (req, res, next) => {
-  // con populate te trae los datos de la referencia que le pases en el modelo de tours (en este caso los guides)
-  const tour = await Tour.findById(req.params.id).populate("reviews");
+//#region ya no es necesario la funcion catchAsync porque ya lo estamos usando en el handler de rutas
+// try {
+// } catch (error) {
+//   res.status(400).json({
+//     status: "fail",
+//     message: error.message,
+//   });
+// }
+// });
+//#endregion
 
-  if (!tour) {
-    return next(new appError("No tour found with that ID", 404));
-  }
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour: tour,
-    },
-  });
-});
+//#region  forma antigua de deleteTour
 
-const updateTour = catchAsync(async (req, res, next) => {
-  const tourUpdated = await Tour.findOneAndUpdate(
-    { _id: req.params.id },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+// const deleteTour = catchAsync(async (req, res, next) => {
+//   const tourDelete = await Tour.findByIdAndDelete(req.params.id);
 
-  if (!tourUpdated) {
-    return next(new appError("No tour found with that ID", 404));
-  }
+//   if (!tourDelete) {
+//     return next(new appError("No tour found with that ID", 404));
+//   }
+//   res.status(204).json({
+//     status: "success",
+//     data: tourDelete,
+//     message: "Tour deleted",
+//   });
+// });
+//#endregion
 
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour: tourUpdated,
-    },
-  });
-});
+//#region forma antigua de updateTour
+// const updateTour = catchAsync(async (req, res, next) => {
+//   const tourUpdated = await Tour.findOneAndUpdate(
+//     { _id: req.params.id },
+//     req.body,
+//     {
+//       new: true,
+//       runValidators: true,
+//     }
+//   );
 
+//   if (!tourUpdated) {
+//     return next(new appError("No tour found with that ID", 404));
+//   }
+
+//   res.status(200).json({
+//     status: "success",
+//     data: {
+//       tour: tourUpdated,
+//     },
+//   });
+// });
+//#endregion
+
+//#region Obtener estadisticas de tours
 //https://www.mongodb.com/docs/manual/reference/operator/aggregation/month/
-//Obtener estadisticas de tours
 const getTourStats = catchAsync(async (req, res) => {
   const stats = await Tour.aggregate([
     {
@@ -201,6 +225,8 @@ const getMonthlyPlan = catchAsync(async (req, res) => {
     },
   });
 });
+
+//#endregion
 
 module.exports = {
   getAllTours,
