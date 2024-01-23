@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const Tour = require("./tourModel");
 const reviewSchema = new mongoose.Schema(
   {
     review: {
@@ -32,6 +32,41 @@ const reviewSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
+reviewSchema.statics.calcAverageRatings = async function (tourId) {
+  /**
+   * Calculates statistics for a given tour.
+   *
+   * @param {string} tourId - The ID of the tour.
+   * @returns {Promise<Array>} - A promise that resolves to an array of statistics.
+   */
+  const stats = await this.aggregate([
+    //1) filtrar por tour
+    {
+      $match: { tour: tourId },
+    },
+    //2) calcular estadisticas
+    {
+      $group: {
+        _id: "$tour",
+        nRating: { $sum: 1 }, //numero de ratings
+        avgRating: { $avg: "$rating" }, //promedio de ratings
+      },
+    },
+  ]);
+
+  await Tour.findByIdAndUpdate(tourId, {
+    ratingsQuantity: stats[0].nRating,
+    ratingsAverage: stats[0].avgRating,
+  });
+};
+
+reviewSchema.post("save", function () {
+  // this points to current review
+  this.constructor.calcAverageRatings(this.tour);
+});
 
 // QUERY MIDDLEWARE
 reviewSchema.pre(/^find/, function (next) {
