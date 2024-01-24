@@ -1,5 +1,5 @@
 //const fs = require("fs");
-//const appError = require("../utils/appError");
+const appError = require("../utils/appError");
 //const APIFeatures = require("../utils/apiFeatures");
 const Tour = require("../models/tourModel");
 const catchAsync = require("../utils/catchAsync");
@@ -228,6 +228,82 @@ const getMonthlyPlan = catchAsync(async (req, res) => {
 
 //#endregion
 
+const getToursWithin = async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+
+  const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    return next(
+      new appError(
+        "Please provide latitude and longitude in the format lat,lng.",
+        400
+      )
+    );
+  }
+
+  const tour = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    status: "success",
+    results: tour.length,
+    data: {
+      data: tour,
+    },
+  });
+};
+
+const getDistances = async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+
+  // para que la distancia sea en millas o en km
+  const multiplier = unit === "mi" ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    return next(
+      new appError(
+        "Please provide latitude and longitude in the format lat,lng.",
+        400
+      )
+    );
+  }
+
+  const distance = await Tour.aggregate([
+    {
+      // siempre tiene que ser el primer stage
+      $geoNear: {
+        // el campo que tiene las coordenadas
+        near: {
+          type: "Point",
+          coordinates: [lng * 1, lat * 1],
+        },
+        // el campo que va a tener la distancia
+        distanceField: "distance",
+        // la unidad de medida
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      // el campo que va a tener la distancia
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      data: distance,
+    },
+  });
+};
+
 module.exports = {
   getAllTours,
   createTour,
@@ -238,4 +314,6 @@ module.exports = {
   aliasTopTours,
   getTourStats,
   getMonthlyPlan,
+  getToursWithin,
+  getDistances,
 };
