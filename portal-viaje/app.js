@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const path = require("path");
 const rateLimit = require("express-rate-limit"); // para limitar el numero de peticiones a la api
 const helmet = require("helmet"); // para proteger la app de ciertos ataques
 const mongoSanitize = require("express-mongo-sanitize"); // para proteger la app de ciertos ataques
@@ -10,8 +11,14 @@ const appError = require("./utils/appError");
 const TourRouter = require("./routes/tourRoutes");
 const UserRouter = require("./routes/userRoutes");
 const ReviewRouter = require("./routes/reviewRoutes");
-const app = express();
 const globalErrorHandler = require("./controllers/errorController");
+
+const app = express();
+
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
+// para poder tener la data en el req en post desde un form html
+app.use(express.static(`${__dirname}/public`));
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -49,8 +56,6 @@ app.use(
   })
 ); // para proteger la app de ciertos ataques como parameter pollution (eliminar parametros duplicados)
 
-// para poder tener la data en el req en post desde un form html
-app.use(express.static(`${__dirname}/public`));
 //app.use(express.urlencoded({ extended: true }));
 
 //middleware
@@ -58,6 +63,13 @@ app.use(express.static(`${__dirname}/public`));
 //   console.log("Hello from the middleware 👋 ");
 //   next();
 // });
+
+app.get("/", (req, res) => {
+  res.status(200).render("base", {
+    tour: "The Forest Hiker",
+    user: "Jonas",
+  });
+});
 
 app.use("/api/v1/tours", TourRouter);
 app.use("/api/v1/users", UserRouter);
