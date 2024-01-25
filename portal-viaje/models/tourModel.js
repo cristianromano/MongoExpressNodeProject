@@ -109,9 +109,8 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-    //guides:Array
+    //guides: Array,
     guides: [
-      //referencia a otro modelo
       {
         type: mongoose.Schema.ObjectId,
         ref: "User",
@@ -172,18 +171,18 @@ tourSchema.pre("save", function (next) {
 
 //QUERY MIDDLEWARE
 
-// corre antes de un .find() o un .findOne() o un .findOneAndUpdate() o un .findOneAndDelete()
-tourSchema.pre(/^find/, function (next) {
-  this.find({ secretTour: { $ne: true } });
-  next();
-});
-
 tourSchema.pre(/^find/, function (next) {
   this.populate({
     path: "guides",
     select: "-__v -passwordChangedAt",
   });
 
+  next();
+});
+
+// corre antes de un .find() o un .findOne() o un .findOneAndUpdate() o un .findOneAndDelete()
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
   next();
 });
 
