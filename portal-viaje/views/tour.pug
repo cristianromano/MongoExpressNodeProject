@@ -1,8 +1,10 @@
 extends base
 include _reviewCard
 
-//- block append head
-  //script(src="./js/mapbox.js") 
+block append head 
+  script(src='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js')
+  link(href='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css' rel='stylesheet')
+
 
 mixin overviewBox(label, text, icon)
   .overview-box__detail
@@ -86,4 +88,4 @@ block content
         p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
         button.btn.btn--green.span-all-rows Book tour now!
 
-      script(src="./js/mapbox.js")
+      
