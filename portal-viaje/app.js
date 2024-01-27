@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-app.use(helmet()); // para proteger la app de ciertos ataques como xss (eliminar html de los querys) y otros
+app.use(helmet({ contentSecurityPolicy: false })); // para proteger la app de ciertos ataques como xss (eliminar html de los querys) y otros
 
 const limiter = rateLimit({
   max: 30, // maximo numero de peticiones
