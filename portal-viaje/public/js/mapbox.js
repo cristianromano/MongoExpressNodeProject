@@ -24,39 +24,48 @@ var map = new mapboxgl.Map({
   zoom: 9, // starting zoom
 });
 
-//#region
+//#region Explicacion de la funcion
 /*
-Sure! Here's a summary of what is happening in each line of the provided code:
 
-1. `const bounds = new mapboxgl.LngLatBounds();`: This line creates a new instance of the `LngLatBounds` class from the Mapbox GL JS library. This object will be used to store the geographical bounds of the map.
+1. `const bounds = new mapboxgl.LngLatBounds();`: This line creates a new instance of the `LngLatBounds` class from the Mapbox GL JS library. 
+This object will be used to store the geographical bounds of the map.
 
-3. `locations.forEach((loc) => {`: This line starts a loop that iterates over each element in the `locations` array. It uses the `forEach` method to execute the provided function for each element.
+2. `locations.forEach((loc) => {`: This line starts a loop that iterates over each element in the `locations` array. 
+It uses the `forEach` method to execute the provided function for each element.
 
-5. `const el = document.createElement("div");`: This line creates a new HTML `div` element using the `createElement` method from the `document` object. This element will be used as a marker on the map.
+3. el.className = "marker";: This line sets the className property of the el element to "marker". This assigns a CSS class to the element, which can be used to style it.
 
-7. `el.className = "marker";`: This line sets the `className` property of the `el` element to "marker". This assigns a CSS class to the element, which can be used to style it.
+4. `const el = document.createElement("div");`: This line creates a new HTML `div` element using the `createElement` method from the `document` object. 
+This element will be used as a marker on the map.
 
-10. `new mapboxgl.Marker({`: This line creates a new instance of the `Marker` class from the Mapbox GL JS library. It takes an object as an argument with configuration options for the marker.
+5. `new mapboxgl.Marker({`: This line creates a new instance of the `Marker` class from the Mapbox GL JS library. 
+It takes an object as an argument with configuration options for the marker.
 
-12. `.setLngLat(loc.coordinates)`: This line sets the longitude and latitude coordinates of the marker using the `setLngLat` method. It takes the `coordinates` property of the `loc` object as an argument.
+6. `.setLngLat(loc.coordinates)`: This line sets the longitude and latitude coordinates of the marker using the `setLngLat` method. 
+It takes the `coordinates` property of the `loc` object as an argument.
 
-14. `.addTo(map);`: This line adds the marker to the map by calling the `addTo` method and passing the `map` object as an argument.
+7. `.addTo(map);`: This line adds the marker to the map by calling the `addTo` method and passing the `map` object as an argument.
 
-17. `new mapboxgl.Popup({`: This line creates a new instance of the `Popup` class from the Mapbox GL JS library. It takes an object as an argument with configuration options for the popup.
+8. `new mapboxgl.Popup({`: This line creates a new instance of the `Popup` class from the Mapbox GL JS library. 
+It takes an object as an argument with configuration options for the popup.
 
-19. `.setLngLat(loc.coordinates)`: This line sets the longitude and latitude coordinates of the popup using the `setLngLat` method. It takes the `coordinates` property of the `loc` object as an argument.
+9. `.setLngLat(loc.coordinates)`: This line sets the longitude and latitude coordinates of the popup using the `setLngLat` method. 
+It takes the `coordinates` property of the `loc` object as an argument.
 
-21. `.setHTML(`<p>Day ${loc.day}: ${loc.description}</p>`)`: This line sets the HTML content of the popup using the `setHTML` method. It takes a template string that includes the `day` and `description` properties of the `loc` object.
+10. `.setHTML(`<p>Day ${loc.day}: ${loc.description}</p>`)`: This line sets the HTML content of the popup using the `setHTML` method. 
+It takes a template string that includes the `day` and `description` properties of the `loc` object.
 
-23. `.addTo(map);`: This line adds the popup to the map by calling the `addTo` method and passing the `map` object as an argument.
+11. `.addTo(map);`: This line adds the popup to the map by calling the `addTo` method and passing the `map` object as an argument.
 
-26. `bounds.extend(loc.coordinates);`: This line extends the geographical bounds of the map by including the coordinates of the current location. It uses the `extend` method of the `bounds` object.
+12. `bounds.extend(loc.coordinates);`: This line extends the geographical bounds of the map by including the coordinates of the current location. 
+It uses the `extend` method of the `bounds` object.
 
-29. `map.fitBounds(bounds, {`: This line adjusts the map's zoom level and position to fit the specified bounds. It uses the `fitBounds` method of the `map` object and takes the `bounds` object as the first argument.
+13. `map.fitBounds(bounds, {`: This line adjusts the map's zoom level and position to fit the specified bounds. 
+It uses the `fitBounds` method of the `map` object and takes the `bounds` object as the first argument.
 
-31-36. The `padding` property is an optional configuration option for the `fitBounds` method. It specifies the amount of padding (in pixels) to be added around the bounds. This ensures that the markers and popups are not positioned too close to the edges of the map.
+31-36. The `padding` property is an optional configuration option for the `fitBounds` method. It specifies the amount of padding (in pixels) to be added around the bounds. 
+This ensures that the markers and popups are not positioned too close to the edges of the map.
 
-I hope this summary helps you understand what each line of code is doing! Let me know if you have any further questions.
 */
 //#endregion
 

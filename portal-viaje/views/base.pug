@@ -11,12 +11,14 @@ html(lang="en")
         link(rel="shortcut icon", type="image/png", href="/img/favicon.png")
 
     body 
-        include _header.pug
+        include _header
 
         block content
             h1 This is a placeholder
         
-        include _footer.pug
+        include _footer
 
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js")
         script(src="/js/mapbox.js")
+        script(src="/js/login.js") 
         

@@ -6,6 +6,7 @@ const helmet = require("helmet"); // para proteger la app de ciertos ataques
 const mongoSanitize = require("express-mongo-sanitize"); // para proteger la app de ciertos ataques
 const xss = require("xss-clean"); // para proteger la app de ciertos ataques
 const hpp = require("hpp"); // para proteger la app de ciertos ataques
+const cookieParser = require("cookie-parser"); // para poder leer las cookies
 
 const appError = require("./utils/appError");
 const TourRouter = require("./routes/tourRoutes");
@@ -41,6 +42,7 @@ app.use(
     limit: "10kb",
   })
 );
+app.use(cookieParser()); // para poder leer las cookies
 
 app.use(mongoSanitize()); // para proteger la app de ciertos ataques como query injection (eliminar $ y . de los querys)
 app.use(xss()); // para proteger la app de ciertos ataques como xss (eliminar html de los querys) y otros (cross site scripting)

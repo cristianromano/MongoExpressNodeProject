@@ -83,6 +83,8 @@ const protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -115,6 +117,30 @@ const protect = catchAsync(async (req, res, next) => {
 
   req.user = userFound;
   // GRANT ACCESS TO PROTECTED ROUTE
+  next();
+});
+
+const isLogged = catchAsync(async (req, res, next) => {
+  if (req.cookies.jwt) {
+    // 2) Verification token
+    const decoded = jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+
+    // 3) Check if user changed password after the token was issued
+    const userFound = await User.findById(decoded.id);
+
+    if (!userFound) {
+      return next();
+    }
+
+    // 4) Check if user changed password after the token was issued
+    if (userFound.changedPasswordAfter(decoded.iat)) {
+      return next();
+    }
+
+    res.locals.user = userFound;
+    // GRANT ACCESS TO PROTECTED ROUTE
+    return next();
+  }
   next();
 });
 
@@ -259,4 +285,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   updatePassword,
+  isLogged,
 };

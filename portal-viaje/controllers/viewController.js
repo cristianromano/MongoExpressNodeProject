@@ -21,7 +21,14 @@ const getTour = async (req, res) => {
   });
 };
 
+const getLoginForm = (req, res) => {
+  res.status(200).render("login", {
+    title: "Log into your account",
+  });
+};
+
 module.exports = {
   getAllOverview,
   getTour,
+  getLoginForm,
 };
