@@ -1,6 +1,9 @@
 /*eslint-disable*/
+import "@babel/polyfill";
+import axios from "axios";
+import { showAlert } from "./alerts.js";
 
-const login = async (email, password) => {
+export const login = async (email, password) => {
   try {
     const res = await axios({
       method: "POST",
@@ -11,7 +14,7 @@ const login = async (email, password) => {
       },
     });
     if (res.data.status === "success") {
-      console.log("log in");
+      showAlert("success", "log in");
       window.setTimeout(() => {
         location.assign("/");
       }, 1500);
@@ -21,14 +24,7 @@ const login = async (email, password) => {
   }
 };
 
-document.querySelector(".form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  login(email, password);
-});
-
-const logout = async () => {
+export const logout = async () => {
   try {
     const res = await axios({
       method: "GET",
@@ -36,6 +32,6 @@ const logout = async () => {
     });
     if (res.data.status === "success") location.reload(true);
   } catch (err) {
-    alert("Error logging out! Try again.");
+    showAlert("error", "Error logging out! Try again.");
   }
 };

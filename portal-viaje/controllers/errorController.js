@@ -18,33 +18,60 @@ const handleValidationErrorDB = (err) => {
   return new appError(message, 400);
 };
 
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-    stack: err.stack,
-    error: err,
-  });
-};
-
-const sendErrorProd = (err, res) => {
-  // Operational, trusted error: send message to client
-  if (err.isOperational) {
+const sendErrorDev = (err, req, res) => {
+  if (req.originalUrl.startsWith("/api")) {
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
+      stack: err.stack,
+      error: err,
     });
-
-    // Programming or other unknown error: don't leak error details
   } else {
-    // 1) Log error
-    console.error("ERROR 💥", err);
-
-    // 2) Send generic message
-    res.status(500).json({
-      status: "error",
-      message: "Something went wrong!",
+    res.status(err.statusCode).render("error", {
+      title: "Something went wrong!",
+      msg: err.message,
     });
+  }
+};
+
+const sendErrorProd = (err, req, res) => {
+  // Operational, trusted error: send message to client
+  if (req.originalUrl.startsWith("/api")) {
+    if (err.isOperational) {
+      res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+
+      // Programming or other unknown error: don't leak error details
+    } else {
+      // 1) Log error
+      console.error("ERROR 💥", err);
+
+      // 2) Send generic message
+      res.status(500).json({
+        status: "error",
+        message: "Something went wrong!",
+      });
+    }
+  } else {
+    if (err.isOperational) {
+      res.status(err.statusCode).render("error", {
+        title: "Something went wrong!",
+        msg: err.message,
+      });
+
+      // Programming or other unknown error: don't leak error details
+    } else {
+      // 1) Log error
+      console.error("ERROR 💥", err);
+
+      // 2) Send generic message
+      res.status(err.statusCode).render("error", {
+        title: "Something went wrong!",
+        msg: "Please try again later.",
+      });
+    }
   }
 };
 const errorGlobal = (err, req, res, next) => {
@@ -52,10 +79,11 @@ const errorGlobal = (err, req, res, next) => {
   err.status = err.status || "error";
 
   if (process.env.NODE_ENV === "development") {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   }
   if (process.env.NODE_ENV === "production") {
     let error = { ...err };
+    error.message = err.message;
     if (err.name === "CastError") {
       error = handleCastErrorDB(error);
     } else if (err.code == 11000) {
@@ -68,7 +96,7 @@ const errorGlobal = (err, req, res, next) => {
       error = new appError("Your token has expired! Please log in again.", 401);
     }
 
-    sendErrorProd(error, res);
+    sendErrorProd(error, req, res);
   }
 
   next();

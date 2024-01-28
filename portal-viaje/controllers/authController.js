@@ -56,6 +56,15 @@ const signUp = catchAsync(async (req, res) => {
   createSendToken(newUser, 201, res);
 });
 
+const logout = (req, res) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ status: "success" });
+};
+
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -120,29 +129,33 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-const isLogged = catchAsync(async (req, res, next) => {
+const isLogged = async (req, res, next) => {
   if (req.cookies.jwt) {
-    // 2) Verification token
-    const decoded = jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+    try {
+      // 2) Verification token
+      const decoded = jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
 
-    // 3) Check if user changed password after the token was issued
-    const userFound = await User.findById(decoded.id);
+      // 3) Check if user changed password after the token was issued
+      const userFound = await User.findById(decoded.id);
 
-    if (!userFound) {
+      if (!userFound) {
+        return next();
+      }
+
+      // 4) Check if user changed password after the token was issued
+      if (userFound.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      res.locals.user = userFound;
+      // GRANT ACCESS TO PROTECTED ROUTE
+      return next();
+    } catch (error) {
       return next();
     }
-
-    // 4) Check if user changed password after the token was issued
-    if (userFound.changedPasswordAfter(decoded.iat)) {
-      return next();
-    }
-
-    res.locals.user = userFound;
-    // GRANT ACCESS TO PROTECTED ROUTE
-    return next();
   }
   next();
-});
+};
 
 const restrictTo = (...roles) => {
   return (req, res, next) => {
@@ -286,4 +299,5 @@ module.exports = {
   resetPassword,
   updatePassword,
   isLogged,
+  logout,
 };
